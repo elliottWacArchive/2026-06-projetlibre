@@ -15,6 +15,9 @@ const apiRoutes = require('./modules/api/routes');
 const world = require('./modules/world/socket');
 const chat = require('./modules/chat/socket');
 
+const roomRoutes = require('./modules/rooms/routes');
+const roomSocket = require('./modules/rooms/socket');
+
 const app = express();
 const server = http.createServer(app);
 
@@ -24,6 +27,7 @@ app.use(cookieParser());
 
 app.use('/auth', authRoutes);
 app.use('/', apiRoutes);
+app.use('/rooms', roomRoutes);
 
 // handler d'erreurs commun aux modules
 app.use((err, req, res, next) => {
@@ -59,6 +63,7 @@ io.on('connection', (socket) => {
 	console.log(
 		`[${new Date().toISOString()}] connexion: ${socket.id} (${socket.data.user ? socket.data.user.username : 'invite'})`
 	);
+	roomSocket.attach(io, socket);
 	world.attach(io, socket);
 	chat.attach(io, socket);
 

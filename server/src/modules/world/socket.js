@@ -26,6 +26,7 @@ function attach(io, socket) {
 			username: user
 				? user.username
 				: `Guest_${Math.floor(Math.random() * 1000)}`,
+			roomId: socket.data.roomId || null,
 			x: saved ? saved.x : 0,
 			y: saved ? saved.y : 5,
 			z: saved ? saved.z : 0,
@@ -33,6 +34,7 @@ function attach(io, socket) {
 			connected: Date.now(),
 		};
 		players.set(socket.id, player);
+		socket.data.player = player;
 
 		socket.emit('init', { playerId: socket.id, player });
 		socket.emit('currentPlayers', Array.from(players.values()));
