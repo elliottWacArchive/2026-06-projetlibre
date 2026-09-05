@@ -36,7 +36,7 @@ export default function HomePage() {
 					</p>
 					<button
 						className="btn"
-						onClick={() => router.push('/play')}>
+						onClick={() => router.push('/servers')}>
 						Jouer
 					</button>
 					<button className="btn btn-ghost" onClick={logout}>
@@ -47,7 +47,7 @@ export default function HomePage() {
 				<div className="landing-actions">
 					<button
 						className="btn"
-						onClick={() => router.push('/play')}>
+						onClick={() => router.push('/servers')}>
 						Jouer en invite
 					</button>
 					<Link className="btn btn-ghost" href="/login">
