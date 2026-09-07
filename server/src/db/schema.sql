@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS sessions (
     token UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL
+        REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     expires_at TIMESTAMPTZ NOT NULL
 );
@@ -21,8 +22,12 @@ CREATE TABLE IF NOT EXISTS rooms (
 );
 
 CREATE TABLE IF NOT EXISTS players (
-    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-    room_id INTEGER REFERENCES rooms(id) ON DELETE SET NULL,
+    user_id INTEGER PRIMARY KEY
+        REFERENCES users(id) ON DELETE CASCADE,
+
+    room_id INTEGER
+        REFERENCES rooms(id) ON DELETE SET NULL,
+
     x REAL NOT NULL DEFAULT 0,
     y REAL NOT NULL DEFAULT 5,
     z REAL NOT NULL DEFAULT 0,
@@ -33,12 +38,8 @@ CREATE TABLE IF NOT EXISTS players (
 CREATE INDEX IF NOT EXISTS idx_sessions_expires
 ON sessions (expires_at);
 
-INSERT INTO rooms (slug, name)
-VALUES ('lobby', 'Lobby')
-ON CONFLICT (slug) DO NOTHING;
 
-
--- SERVEURS / ROOMS
+-- Gestion des serveurs
 
 ALTER TABLE rooms
 ADD COLUMN IF NOT EXISTS owner_id INTEGER
@@ -53,6 +54,20 @@ ADD COLUMN IF NOT EXISTS visibility VARCHAR(10) NOT NULL DEFAULT 'public';
 ALTER TABLE rooms
 ADD COLUMN IF NOT EXISTS invite_code_hash TEXT;
 
+ALTER TABLE rooms
+ADD COLUMN IF NOT EXISTS is_system BOOLEAN NOT NULL DEFAULT false;
+
+
+-- Le lobby est créé automatiquement au démarrage
+INSERT INTO rooms (slug, name)
+VALUES ('lobby', 'Lobby')
+ON CONFLICT (slug) DO NOTHING;
+
+UPDATE rooms
+SET is_system = true
+WHERE slug = 'lobby';
+
+
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -66,6 +81,7 @@ BEGIN
     END IF;
 END
 $$;
+
 
 DO $$
 BEGIN
@@ -82,7 +98,7 @@ END
 $$;
 
 
--- Membres persistants d'un serveur.
+-- Liste des membres d'un serveur
 CREATE TABLE IF NOT EXISTS room_members (
     room_id INTEGER NOT NULL
         REFERENCES rooms(id) ON DELETE CASCADE,
@@ -96,15 +112,13 @@ CREATE TABLE IF NOT EXISTS room_members (
 );
 
 CREATE INDEX IF NOT EXISTS idx_room_members_user
-ON room_members (user_id);
+ON room_members(user_id);
 
 CREATE INDEX IF NOT EXISTS idx_room_members_room
-ON room_members (room_id);
+ON room_members(room_id);
 
 
--- Connexions actuellement présentes dans une room.
--- Cette table permet de gérer aussi les invités qui n'ont
--- pas de compte utilisateur.
+-- Garde les joueurs actuellement connectés
 CREATE TABLE IF NOT EXISTS room_connections (
     room_id INTEGER NOT NULL
         REFERENCES rooms(id) ON DELETE CASCADE,
@@ -118,7 +132,7 @@ CREATE TABLE IF NOT EXISTS room_connections (
 );
 
 CREATE INDEX IF NOT EXISTS idx_room_connections_room
-ON room_connections (room_id);
+ON room_connections(room_id);
 
 CREATE INDEX IF NOT EXISTS idx_room_connections_user
-ON room_connections (user_id);
+ON room_connections(user_id);

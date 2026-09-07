@@ -17,6 +17,7 @@ const chat = require('./modules/chat/socket');
 
 const roomRoutes = require('./modules/rooms/routes');
 const roomSocket = require('./modules/rooms/socket');
+const serverRoutes = require('./modules/server/routes');
 
 const app = express();
 const server = http.createServer(app);
@@ -28,6 +29,7 @@ app.use(cookieParser());
 app.use('/auth', authRoutes);
 app.use('/', apiRoutes);
 app.use('/rooms', roomRoutes);
+app.use('/servers', serverRoutes);
 
 // handler d'erreurs commun aux modules
 app.use((err, req, res, next) => {
