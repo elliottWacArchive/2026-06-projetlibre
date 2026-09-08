@@ -136,3 +136,51 @@ ON room_connections(room_id);
 
 CREATE INDEX IF NOT EXISTS idx_room_connections_user
 ON room_connections(user_id);
+
+-- Serveur principal de l'application
+CREATE TABLE IF NOT EXISTS servers (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(128) NOT NULL,
+    visibility VARCHAR(10) NOT NULL DEFAULT 'public',
+    invite_code_hash TEXT,
+    capacity INTEGER NOT NULL DEFAULT 20,
+    owner_id INTEGER NOT NULL
+        REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    is_active BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT servers_capacity_positive
+        CHECK (capacity > 0),
+
+    CONSTRAINT servers_visibility_valid
+        CHECK (visibility IN ('public', 'private'))
+);
+
+-- Pour l'instant, un seul serveur actif à la fois
+CREATE UNIQUE INDEX IF NOT EXISTS idx_one_active_server
+ON servers (is_active)
+WHERE is_active = true;
+
+
+-- Membres du serveur
+CREATE TABLE IF NOT EXISTS server_members (
+    server_id INTEGER NOT NULL
+        REFERENCES servers(id) ON DELETE CASCADE,
+
+    user_id INTEGER NOT NULL
+        REFERENCES users(id) ON DELETE CASCADE,
+
+    role VARCHAR(10) NOT NULL DEFAULT 'member',
+    joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    PRIMARY KEY (server_id, user_id),
+
+    CONSTRAINT server_members_role_valid
+        CHECK (role IN ('owner', 'member'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_server_members_user
+ON server_members(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_server_members_server
+ON server_members(server_id);
