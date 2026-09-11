@@ -184,3 +184,58 @@ ON server_members(user_id);
 
 CREATE INDEX IF NOT EXISTS idx_server_members_server
 ON server_members(server_id);
+
+-- Bureaux
+CREATE TABLE IF NOT EXISTS desks (
+    id SERIAL PRIMARY KEY,
+
+    server_id INTEGER NOT NULL
+        REFERENCES rooms(id) ON DELETE CASCADE,
+
+    owner_id INTEGER NOT NULL
+        REFERENCES users(id) ON DELETE CASCADE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_desks_server
+ON desks(server_id);
+
+CREATE INDEX IF NOT EXISTS idx_desks_owner
+ON desks(owner_id);
+
+
+-- Fichiers déposés sur les bureaux
+CREATE TABLE IF NOT EXISTS desk_files (
+    id SERIAL PRIMARY KEY,
+
+    desk_id INTEGER NOT NULL
+        REFERENCES desks(id) ON DELETE CASCADE,
+
+    uploader_id INTEGER NOT NULL
+        REFERENCES users(id) ON DELETE CASCADE,
+
+    original_name VARCHAR(255) NOT NULL,
+
+    stored_name VARCHAR(255) NOT NULL UNIQUE,
+
+    size BIGINT NOT NULL,
+
+    mime_type VARCHAR(255) NOT NULL,
+
+    is_hidden BOOLEAN NOT NULL DEFAULT false,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    CONSTRAINT desk_files_size_positive
+        CHECK (size > 0),
+
+    CONSTRAINT desk_files_original_name_not_empty
+        CHECK (length(btrim(original_name)) > 0)
+);
+
+CREATE INDEX IF NOT EXISTS idx_desk_files_desk
+ON desk_files(desk_id);
+
+CREATE INDEX IF NOT EXISTS idx_desk_files_uploader
+ON desk_files(uploader_id);

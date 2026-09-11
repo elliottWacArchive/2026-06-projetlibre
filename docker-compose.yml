@@ -30,6 +30,8 @@ services:
         restart: unless-stopped
         ports:
             - '3000:3000'
+        volumes:
+            - file-data:/app/uploads
         environment:
             - NODE_ENV=production
             - PORT=3000
@@ -90,3 +92,5 @@ networks:
 volumes:
     db-data:
         name: ahme-db-data
+    file-data:
+        name: ahme-file-data

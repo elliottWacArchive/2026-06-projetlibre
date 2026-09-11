@@ -6,4 +6,8 @@ module.exports = {
 	databaseUrl:
 		process.env.DATABASE_URL || 'postgres://ahme:ahme@localhost:5432/ahme',
 	sessionTtlDays: 7,
+
+	fileStoragePath: process.env.FILE_STORAGE_PATH || '/app/uploads',
+	maxFileSize: 10 * 1024 * 1024,
+	maxFilesPerDesk: 20,
 };
