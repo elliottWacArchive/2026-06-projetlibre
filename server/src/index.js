@@ -19,6 +19,7 @@ const roomRoutes = require('./modules/rooms/routes');
 const roomSocket = require('./modules/rooms/socket');
 const serverRoutes = require('./modules/server/routes');
 const deskFileRoutes = require('./modules/desk-files/routes');
+const deskNoteRoutes = require('./modules/desk-notes/routes');
 
 const app = express();
 const server = http.createServer(app);
@@ -32,6 +33,7 @@ app.use('/', apiRoutes);
 app.use('/rooms', roomRoutes);
 app.use('/servers', serverRoutes);
 app.use('/desks', deskFileRoutes);
+app.use('/desks', deskNoteRoutes);
 
 // handler d'erreurs commun aux modules
 app.use((err, req, res, next) => {

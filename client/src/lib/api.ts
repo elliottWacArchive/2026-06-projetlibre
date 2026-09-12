@@ -18,6 +18,18 @@ export interface Room {
 	connectedPlayers: number;
 }
 
+export type DeskNoteColor = 'yellow' | 'pink' | 'blue' | 'green';
+
+export interface DeskNote {
+        id: number;
+        deskId: number;
+        authorId: number;
+        authorUsername: string;
+        content: string;
+        color: DeskNoteColor;
+        createdAt: string;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 	const res = await fetch(SOCKET_URL + path, {
 		credentials: 'include',
@@ -52,4 +64,27 @@ export const api = {
 	me: () => request<{ user: User | null }>('/auth/me'),
 
 	rooms: () => request<{ rooms: Room[] }>('/rooms'),
+
+        deskNotes: (deskId: number) =>
+                request<{ notes: DeskNote[] }>(`/desks/${deskId}/notes`),
+
+        createDeskNote: (
+                deskId: number,
+                body: { content: string; color: DeskNoteColor }
+        ) =>
+                request<{ ok: boolean; note: DeskNote }>(
+                        `/desks/${deskId}/notes`,
+                        {
+                                method: 'POST',
+                                body: JSON.stringify(body),
+                        }
+                ),
+
+        deleteDeskNote: (deskId: number, noteId: number) =>
+                request<{ ok: boolean; note: { id: number; deskId: number } }>(
+                        `/desks/${deskId}/notes/${noteId}`,
+                        {
+                                method: 'DELETE',
+                        }
+                ),
 };

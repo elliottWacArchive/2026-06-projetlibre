@@ -9,6 +9,7 @@ import { InteractionManager } from '@/game/interactions';
 import type { ChatMessage } from '@/game/types';
 import { SOCKET_URL } from '@/lib/config';
 import ChatBox from './ChatBox';
+import DeskOverlay from './desk/DeskOverlay';
 
 const MAX_MESSAGES = 50;
 
@@ -21,6 +22,7 @@ export default function GameCanvas() {
 
 	const [connected, setConnected] = useState(false);
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
+	const [openDeskId, setOpenDeskId] = useState<number | null>(null);
 
 	useEffect(() => {
 		if (!containerRef.current) return;
@@ -62,6 +64,23 @@ export default function GameCanvas() {
 		networkRef.current?.sendChatMessage(msg);
 	};
 
+	useEffect(() => {
+		const handleDeskOpen = (event: Event) => {
+			const customEvent = event as CustomEvent<{ deskId?: number }>;
+			const deskId = customEvent.detail?.deskId;
+
+			if (typeof deskId === 'number') {
+				setOpenDeskId(deskId);
+			}
+		};
+
+		window.addEventListener('desk:open', handleDeskOpen);
+
+		return () => {
+			window.removeEventListener('desk:open', handleDeskOpen);
+		};
+	}, []);
+
 	return (
 		<>
 			<div id="container" ref={containerRef} />
@@ -78,6 +97,13 @@ export default function GameCanvas() {
 			</div>
 
 			<ChatBox messages={messages} onSend={sendChat} />
+
+			{openDeskId !== null && (
+				<DeskOverlay
+					deskId={openDeskId}
+					onClose={() => setOpenDeskId(null)}
+				/>
+			)}
 
 			<div id="joystick-container" ref={joyContainerRef}>
 				<div id="joystick-base" ref={joyBaseRef}>

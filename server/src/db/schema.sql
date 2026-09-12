@@ -239,3 +239,32 @@ ON desk_files(desk_id);
 
 CREATE INDEX IF NOT EXISTS idx_desk_files_uploader
 ON desk_files(uploader_id);
+
+-- Post-its sur les bureaux
+CREATE TABLE IF NOT EXISTS desk_notes (
+    id SERIAL PRIMARY KEY,
+
+    desk_id INTEGER NOT NULL
+        REFERENCES desks(id) ON DELETE CASCADE,
+
+    author_id INTEGER NOT NULL
+        REFERENCES users(id) ON DELETE CASCADE,
+
+    content VARCHAR(500) NOT NULL,
+
+    color VARCHAR(20) NOT NULL DEFAULT 'yellow',
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    CONSTRAINT desk_notes_content_not_empty
+        CHECK (length(btrim(content)) > 0),
+
+    CONSTRAINT desk_notes_color_valid
+        CHECK (color IN ('yellow', 'pink', 'blue', 'green'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_desk_notes_desk
+ON desk_notes(desk_id);
+
+CREATE INDEX IF NOT EXISTS idx_desk_notes_author
+ON desk_notes(author_id);
